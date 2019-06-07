@@ -3,7 +3,9 @@ project(sandbox)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(SANDBOX_SOURCE_FILES main.cpp)
+set(SANDBOX_SOURCE_FILES
+        main.cpp
+        sample_file.cpp)
 add_executable(sandbox ${SANDBOX_SOURCE_FILES})
 
 target_link_libraries(sandbox
