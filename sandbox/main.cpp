@@ -1,3 +1,7 @@
+//
+// Created by frenchcommando on 6/7/2019.
+//
+
 #include <iostream>
 #include <input_parser.h>
 #include <numeric_helper.h>
@@ -17,10 +21,17 @@ void run_numeric_helper(){
 
 void run_one();
 
+void run_two();
+
+void run_loop();
+
+
 int main() {
     std::cout << "Hello, World!" << std::endl;
 //    run_input_parser();
-//    run_numeric_helper();
-    run_one();
+    run_numeric_helper();
+//    run_one();
+//    run_two();
+    run_loop();
     return 0;
 }

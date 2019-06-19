@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(test_numeric)
+
 set(NUMERIC_TEST_FILES
         basic_numeric_test.cpp)
 add_executable(runNumericTests ${NUMERIC_TEST_FILES})

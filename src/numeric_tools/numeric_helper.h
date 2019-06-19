@@ -21,8 +21,11 @@ public:
         return t;
     }
 
-    template <typename ...Args> static auto vmax(Args&&... args) { return std::max({ std::forward<Args>(args)... }); }
-    template <typename ...Args> static auto vmin(Args&&... args) { return std::min({ std::forward<Args>(args)... }); }
+#define vectorize(my_function) template <typename ...Args> \
+static auto v##my_function(Args&&... args) { return std::my_function({ std::forward<Args>(args)... }); }
+    vectorize(min)
+    vectorize(max)
+
 };
 
 
