@@ -53,7 +53,8 @@ struct Node{
 
     void add_string(const ItType& iteratorStart, const ItType& iteratorEnd,
             const StringIndexType string_index,
-            const size_t init_index){
+            const size_t init_index,
+            const bool is_first){
         auto p0 = start;
         auto p1 = iteratorStart;
         size_t add_score = 0;
@@ -66,15 +67,17 @@ struct Node{
         // each score in the node should be the same
 
         if (p0 == end and p1 == iteratorEnd){
-            i[string_index].emplace(init_index);
+            if (is_first or not i.empty())
+                i[string_index].emplace(init_index);
         }
         else if (p0 == end){
             i[string_index].emplace(init_index);
             if (s.find(*p1) != s.cend()){
-                s[*p1].add_string(p1, iteratorEnd, string_index, init_index);
+                s[*p1].add_string(p1, iteratorEnd, string_index, init_index, is_first);
             }
             else{
-                s[*p1] = Node{p1, iteratorEnd, {}, {{string_index, {init_index}}}, score + add_score, str + str_s};
+                if(is_first)
+                    s[*p1] = Node{p1, iteratorEnd, {}, {{string_index, {init_index}}}, score + add_score, str + str_s};
             }
         }
         else if (p1 == iteratorEnd){
@@ -97,11 +100,11 @@ struct Node{
 
     }
 
-    std::string get_string() const{
-        return str + std::string(start, end);
+    std::string get_string(const size_t ii) const{
+        return str + std::string(start, end - (std::distance(start, end) - ii));
     }
-    std::string get_reverse_string() const{
-        std::string s_s = get_string();
+    std::string get_reverse_string(const size_t ii) const{
+        std::string s_s = get_string(ii);
         return std::string(s_s.crbegin(), s_s.crend());
     }
 };
@@ -119,39 +122,42 @@ public:
 //    }
 
     void add_suffix_string(const std::string::const_iterator& s_begin, const std::string::const_iterator& s_end,
-            const size_t& string_index, const size_t init_index = 0){
+            const size_t& string_index, const size_t init_index = 0, const bool is_first = true){
         size_t j = init_index;
         for(auto it = s_begin; it != s_end; it++){
-            head.add_string(it, s_end, string_index, j++);
+            head.add_string(it, s_end, string_index, j++, is_first);
         }
     }
 
-    void add_suffix_string(const std::string& s, const size_t& string_index, const size_t init_index = 0){
-        add_suffix_string(s.cbegin(), s.cend(), string_index, init_index);
+    void add_suffix_string(const std::string& s, const size_t& string_index, const size_t init_index = 0, const bool is_first = true){
+        add_suffix_string(s.cbegin(), s.cend(), string_index, init_index, is_first);
     }
 
     void add_suffix_alphabet(const std::string::const_iterator& s_begin, const std::string::const_iterator& s_end,
                              const size_t string_index, const size_t init_index,
-                             const std::set<char>& alphabet){
+                             const std::set<char>& alphabet, const bool is_first){
         if(s_begin == s_end)
             return;
+
+//        add_suffix_string(s_begin, s_end, string_index, init_index);
+//        return;
         auto it = s_begin;
         size_t index = init_index;
         while(it != s_end and alphabet.find(*it) != alphabet.cend()){
             ++it;
             ++index;
         }
-        add_suffix_string(s_begin, it, string_index, init_index);
+        add_suffix_string(s_begin, it, string_index, init_index, is_first);
 
         while(it != s_end and alphabet.find(*it) == alphabet.cend()){
             ++it;
             ++index;
         }
-        add_suffix_alphabet(it, s_end, string_index, index, alphabet);
+        add_suffix_alphabet(it, s_end, string_index, index, alphabet, is_first);
     }
     void add_suffix_alphabet(const std::string& s, const size_t s_index,
-                                    const std::set<char>& alphabet){
-        add_suffix_alphabet(s.cbegin(), s.cend(), s_index, 0, alphabet);
+                                    const std::set<char>& alphabet, const bool is_first){
+        add_suffix_alphabet(s.cbegin(), s.cend(), s_index, 0, alphabet, is_first);
     }
 
     friend std::ostream &operator<<(std::ostream &os, const suffix_tree &tree) {
@@ -289,7 +295,6 @@ public:
     }
     static std::string solve(const std::string& s1, const std::string& s2){
         return solve_v(s1, std::string(s2.crbegin(), s2.crend()));
-//        return *std::min_element(v.cbegin(), v.cend());
     }
 
     static auto build_common_alphabet(const std::string& s1, const std::string& s2,
@@ -340,8 +345,8 @@ public:
         if (common_alphabet.empty())
             return {"-1"};
 
-        t.add_suffix_alphabet(s1, s1_index, common_alphabet);
-        t.add_suffix_alphabet(s2, s2_index, common_alphabet);
+        t.add_suffix_alphabet(s1, s1_index, common_alphabet, true);
+        t.add_suffix_alphabet(s2, s2_index, common_alphabet, false);
 
 //        std::cout << t << std::endl;
         palindrome_substring_object p1(s1), p2(s2);
@@ -356,48 +361,58 @@ public:
             auto node = q.front();
             q.pop();
 //            std::cout << "looking at node\t" << node.get().get_string() << std::endl;
-            bool has_s1 = node.get().i.find(s1_index) != node.get().i.cend();
-            bool has_s2 = node.get().i.find(s2_index) != node.get().i.cend();
+            const auto i = node.get().i;
+            bool has_s1 = i.find(s1_index) != i.cend();
+            bool has_s2 = i.find(s2_index) != i.cend();
             if (has_s1 and has_s2){
                 for(const auto& p: node.get().s){
                     q.emplace(p.second);
                 }
-                size_t nn = node.get().score + std::distance(node.get().start, node.get().end);
-                if (nn > 0){
-                    int n_threshold = n - nn * 2;
-                    if(n_threshold < 0)
-                        n_threshold = 0;
-                    std::string s_candidate;
-                    size_t n_candidate = 0;
-                    for (const auto& p : node.get().i){
-                        std::string ss;
+                // have to check partial strings ?? - I could
+                auto v_k = std::distance(node.get().start, node.get().end);
+                for(int k = v_k; k >= 0 ; k--){
+                    size_t nn = node.get().score + k;
+                    if (nn > 0){
+                        int n_threshold = n - nn * 2;
+                        if(n_threshold < 0)
+                            n_threshold = 0;
+                        std::string s_candidate;
+                        size_t n_candidate = 0;
+                        for (const auto& p : i){
+                            std::string ss;
 //                        for(const auto& pp: p.second)
 //                            std::cout << pp << "\t";
 //                        std::cout << std::endl;
-                        if(p.first == s1_index) {
-                            for(const auto& pp: p.second){
-                                update_str_palindrome(s_candidate, p1, pp + nn, n_threshold);
-                            }
-                        } // some branch and bound here ?
-                        if(p.first == s2_index) {
-                            for(const auto& pp: p.second){
-                                update_str_palindrome(s_candidate, p2, pp + nn, n_threshold);
+                            if(p.first == s1_index) {
+                                for(const auto& pp: p.second){
+                                    update_str_palindrome(s_candidate, p1, pp + nn, n_threshold);
+                                }
+                            } // some branch and bound here ?
+                            if(p.first == s2_index) {
+                                for(const auto& pp: p.second){
+                                    update_str_palindrome(s_candidate, p2, pp + nn, n_threshold);
+                                }
                             }
                         }
-                    }
-                    size_t real_nn = 2 * nn + s_candidate.length();
-                    std::string real_str = node.get().get_string()
-                            + s_candidate
-                            + node.get().get_reverse_string();
-                    if (real_nn > n){
+                        size_t real_nn = 2 * nn + s_candidate.length();
+                        if (real_nn > n){
+
+                            std::string real_str = node.get().get_string(k)
+                                                   + s_candidate
+                                                   + node.get().get_reverse_string(k);
 //                        std::cout << s << "\t" << real_str << std::endl;
-                        n = real_nn;
-                        s = real_str;
-                    }
-                    else if (real_nn == n){
-//                        std::cout << s << "\t" << real_str << std::endl;
-                        if (s.compare(real_str) > 0)
+                            n = real_nn;
                             s = real_str;
+                        }
+                        else if (real_nn == n){
+
+                            std::string real_str = node.get().get_string(k)
+                                                   + s_candidate
+                                                   + node.get().get_reverse_string(k);
+//                        std::cout << s << "\t" << real_str << std::endl;
+                            if (s.compare(real_str) > 0)
+                                s = real_str;
+                        }
                     }
                 }
             }

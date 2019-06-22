@@ -26,6 +26,9 @@ static auto v##my_function(Args&&... args) { return std::my_function({ std::forw
     vectorize(min)
     vectorize(max)
 
+    template <typename ... Args> auto add(Args ... args){return (0 + ... + args);}
+//    template <typename ... Args> auto tmax(Args ... args){return (std::max(..., args);}
+
 };
 
 

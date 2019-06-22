@@ -16,10 +16,10 @@ void check_rep(const std::string& s1, const std::string& s2, const std::string& 
 //    watch(s1);
 //    watch(s2);
 //    watch(s_ref);
-    std::cout << s1.length() << "\t" << s2.length() << std::endl;
+//    std::cout << s1.length() << "\t" << s2.length() << std::endl;
 
     auto s_rep = palindrome::palindrome_substring::solve(s1, s2);
-    std::cout << s_rep.length() << std::endl;
+//    std::cout << s_rep.length() << std::endl;
 
     //    watch(s_rep);
     if (s_ref == s_rep)
@@ -32,7 +32,7 @@ void check_rep(const std::string& s1, const std::string& s2, const std::string& 
 }
 
 void test_files(const std::string& f1, const std::string& f2){
-    std::cout << f1 << std::endl;
+//    std::cout << f1 << std::endl;
     std::string dir = "/mnt/c/Users/marti/CLionProjects/PersoTools/palindrome_sandbox/";
     std::ifstream infile_test (dir + f1);
     std::ifstream infile_rep (dir + f2);
@@ -48,13 +48,19 @@ void test_files(const std::string& f1, const std::string& f2){
     }
 }
 
+void test_num(size_t n){
+    std::cout << "Test " << n << std::endl;
+    test_files("test" + std::to_string(n), "rep" + std::to_string(n));
+}
+
 void test_txt(){
-    test_files("test1", "rep1");
-    test_files("test2", "rep2");
-    test_files("test3", "rep3");
-    test_files("test4", "rep4");
-    test_files("test5", "rep5");
-    test_files("test6", "rep6");
+    test_num(0);
+    test_num(10);
+    test_num(18);
+    test_num(20);
+    test_num(23);
+    test_num(24);
+
 }
 
 void test_palindrome(){
