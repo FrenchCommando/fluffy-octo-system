@@ -57,6 +57,7 @@ void test_txt(){
     test_num(0);
     test_num(10);
     test_num(18);
+    test_num(19);
     test_num(20);
     test_num(23);
     test_num(24);
